@@ -42,7 +42,7 @@ X__3. The products table should have each of the following columns:
 
    X__* stock_quantity (how much of the product is available in stores)
 
-4. Populate this database with around 10 different products. (i.e. Insert "mock" data rows into this database and table).
+X__4. Populate this database with around 10 different products. (i.e. Insert "mock" data rows into this database and table).
 
 5. Then create a Node application called `bamazonCustomer.js`. Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
 
