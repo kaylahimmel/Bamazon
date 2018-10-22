@@ -29,6 +29,19 @@ connection.connect(function(error) {
 });
 
 
+// "AFTERCONNECTION" function where a table is created of the availalble products
+function afterConnection() {
+    connection.query("SELECT product_name,stock_quantity FROM products", function(error, response) {
+        if (error) {
+            console.log(error)
+        } else {
+            console.table(response);
+        }
+        connection.end();
+    });
+};
+
+
 // "bidOrSell" function that prompts the user to sell an item or bid on a an item
 function bidOrSell() {
     inquirer
@@ -120,68 +133,55 @@ function bidOnItem() {
 function sellAnItem() {
     // prompt for info about the item being put up for auction
     inquirer
-    .prompt([
-        {
-            name: "product_name",
-            type: "input",
-            message: "Enter a name for your item."
-        },
-        {
-            name: "department_name",
-            type: "list",
-            message: "What department or category is this item? (Use arrow keys to tab through the list and push 'Enter' key when done.)",
-            choices: ["Pet Items", "Clothing/Shoes", "Automotive", "Sporting Equipment", "Household/Cooking", "Miscellaneous"]
-        },
-        {
-            name: "starting_BID",
-            type: "input",
-            message: "Set the staring price for your item. (Do not include dollar sign.)",
-        },
-        {
-            name: "highest_BID",
-            type: "input",
-            message: "Set the price that completes the auction immediately. (Do not include dollar sign.)",
-        },
-        {
-            name: "stock_quantity",
-            type: "input",
-            message: "Enter the quantity.",
-        }
-    ])
-    .then(function(input) {
-        // After user has input info for all 4 prompts, add their item to the products table
-        connection.query(
-            "INSERT INTO products SET ?",
+        .prompt([
             {
-                product_name: input.product_name,
-                department_name: input.department_name,
-                starting_BID: input.starting_BID,
-                highest_BID: input.highest_BID,
-                stock_quantity: input.stock_quantity
+                name: "product_name",
+                type: "input",
+                message: "Enter a name for your item."
             },
-            function(error) {
-                if (error) {
-                    console.log(error)
-                } else {
-                console.log("Your auction was created successfully!");
-                consoleTable();
-                // re-prompt the user for if they want to BUY or SELL
-                bidOrSell();
-                }
-            });
-    });
+            {
+                name: "department_name",
+                type: "list",
+                message: "What department or category is this item? (Use arrow keys to tab through the list and push 'Enter' key when done.)",
+                choices: ["Pet Items", "Clothing/Shoes", "Automotive", "Sporting Equipment", "Household/Cooking", "Miscellaneous"]
+            },
+            {
+                name: "starting_BID",
+                type: "input",
+                message: "Set the staring price for your item. (Do not include dollar sign.)",
+            },
+            {
+                name: "highest_BID",
+                type: "input",
+                message: "Set the price that completes the auction immediately. (Do not include dollar sign.)",
+            },
+            {
+                name: "stock_quantity",
+                type: "input",
+                message: "Enter the quantity.",
+            }
+        ])
+        .then(function(input) {
+            // After user has input info for all 4 prompts, add their item to the products table
+            connection.query(
+                "INSERT INTO products SET ?",
+                {
+                    product_name: input.product_name,
+                    department_name: input.department_name,
+                    starting_BID: input.starting_BID,
+                    highest_BID: input.highest_BID,
+                    stock_quantity: input.stock_quantity
+                },
+                function(error, response) {
+                    if (error) {
+                        console.log(error)
+                    } else {
+                        console.log("Your auction was created successfully!");
+                        // update table of products in the console
+                        afterConnection()
+                        // re-prompt the user for if they want to BUY or SELL
+                        bidOrSell();
+                    }
+                });
+        });
 };
-
-
-// "AFTERCONNECTION" function where a table is created of the availalble products
-function afterConnection() {
-    connection.query("SELECT * FROM products", function(error, res) {
-        if (error) {
-            console.log(error)
-        } else {
-            consoleTable();
-        }
-        connection.end();
-    });
-};
-

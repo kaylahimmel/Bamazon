@@ -66,3 +66,19 @@ SELECT * FROM products
 -- UPDATE products SET highest_BID = 90 WHERE item_id = 8;
 -- UPDATE products SET highest_BID = 200 WHERE item_id = 9;
 -- UPDATE products SET highest_BID = 65 WHERE item_id = 10;
+
+-- DELETE FROM products WHERE item_id = 12;
+-- DELETE FROM products WHERE item_id = 13;
+-- DELETE FROM products WHERE item_id = 14;
+-- DELETE FROM products WHERE item_id = 15;
+-- DELETE FROM products WHERE item_id = 16;
+-- DELETE FROM products WHERE item_id = 17;
+-- DELETE FROM products WHERE item_id = 18;
+-- DELETE FROM products WHERE item_id = 19;
+-- DELETE FROM products WHERE item_id = 20;
+-- DELETE FROM products WHERE item_id = 21;
+-- DELETE FROM products WHERE item_id = 22;
+-- DELETE FROM products WHERE item_id = 23;
+-- DELETE FROM products WHERE item_id = 24;
+
+-- UPDATE products SET item_id = 11 WHERE item_id = 25;
