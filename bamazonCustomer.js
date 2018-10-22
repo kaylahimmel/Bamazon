@@ -104,12 +104,12 @@ function bidOnItem() {
                                 console.log(error)
                             };
                             console.log("Your bid was accepted--congrats!");
-                            start();
+                            bidOrSell();
                         });
                 } else {
                     // bid wasn't high enough, so apologize and start over
                     console.log("Too low--try adding a few dollars.");
-                    start();
+                    bidOrSell();
                 }
             });
         });
@@ -129,18 +129,18 @@ function sellAnItem() {
         {
             name: "department_name",
             type: "list",
-            message: "What department or category is this item?",
+            message: "What department or category is this item? (Use arrow keys to tab through the list and push 'Enter' key when done.)",
             choices: ["Pet Items", "Clothing/Shoes", "Automotive", "Sporting Equipment", "Household/Cooking", "Miscellaneous"]
         },
         {
             name: "starting_BID",
             type: "input",
-            message: "Set the staring price for your item.",
+            message: "Set the staring price for your item. (Do not include dollar sign.)",
         },
         {
             name: "highest_BID",
             type: "input",
-            message: "Set the price that completes the auction immediately.",
+            message: "Set the price that completes the auction immediately. (Do not include dollar sign.)",
         },
         {
             name: "stock_quantity",
@@ -164,8 +164,9 @@ function sellAnItem() {
                     console.log(error)
                 } else {
                 console.log("Your auction was created successfully!");
+                consoleTable();
                 // re-prompt the user for if they want to BUY or SELL
-                start();
+                bidOrSell();
                 }
             });
     });
