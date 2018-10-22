@@ -4,7 +4,6 @@ var mysql = require("mysql");
 var inquirer = require("inquirer");
 
 var consoleTable = require('console.table');
-// run console.table(response) now instead of just console.log(response) and a nice table will appear in the Terminal
 
 
 // MYSQL connection credentials
@@ -12,39 +11,108 @@ var connection = mysql.createConnection({
     host: "localhost",
     // Your port; if not 3306
     port: 8889,
+    // remove username and password for final push
     user: "root",
-    password: "",
+    password: "root",
     database: "bamazon"
 });
  
 
-// Connect to MySQL and run the "CHOOSEACTION" function
+// Connect to MySQL and run the "bidOrSell" function
 connection.connect(function(error) {
     if (error) {
         console.log(error)
-    };
-    console.log("connected as id " + connection.threadId);
-    chooseAction();
+    } else {
+        console.log("connected as id " + connection.threadId);
+        bidOrSell();
+    }
 });
 
 
-// "CHOOSEACTION" function that prompts the user to sell an item or buy an item
-function chooseAction() {
+// "bidOrSell" function that prompts the user to sell an item or bid on a an item
+function bidOrSell() {
     inquirer
         .prompt({
             name: "actions",
             type: "rawlist",
-            message: "Would you like to [SELL] an item or [BUY] on an item?",
-            choices: ["SELL", "BUY"]
+            message: "Would you like to bid on or sell an item? Choose '1' to bid, '2' to sell.",
+            choices: ["BID", "SELL"]
         })
-        .then(function(answer) {
-            // based on their answer, either call the BUY or the SELL functions
-            if (answer.actions === "SELL") {
+        .then(function(input) {
+            // based on their input, either call the bid or the SELL functions
+            if (input.actions === "1") {
+                bidOnItem();
+            } else {
                 sellAnItem();
-        } else {
-            buyAnItem();
-        }
-    });
+            }
+        });
+};
+
+
+// "bidOnItem" function that shows the user a table of items and allows them to bid on them
+function bidOnItem() {
+    // query the database and build a table for all items being auctioned
+    connection.query("SELECT * FROM products", function(error, results) {
+        if (error) {
+            console.log(error)
+        };
+        // prompt the user for which they'd like to bid on
+        inquirer
+            .prompt([
+                {
+                    name: "choice",
+                    type: "rawlist",
+                    choices: function() {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].item_name);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which auction would you like to bid on?"
+                },
+                {
+                    name: "bid",
+                    type: "input",
+                    message: "How much would you like to bid?"
+                }
+            ])
+            .then(function(input) {
+                // get the information of the chosen item
+                var chosenItem;
+                for (var i = 0; i < results.length; i++) {
+                    if (results[i].item_name === input.choice) {
+                    chosenItem = results[i];
+                    }
+                };
+    
+                // determine if bid was high enough
+                if (chosenItem.highest_BID < parseInt(input_BID)) {
+                    // bid was high enough, so update db, let the user know, and start over
+                    connection.query(
+                        "UPDATE products SET ? WHERE ?",
+                        [
+                            {
+                                highest_BID: input_BID
+                            },
+                            {
+                                id: chosenItem.id
+                            }
+                        ],
+                        function(error) {
+                            if (error) {
+                                console.log(error)
+                            };
+                            console.log("Your bid was accepted--congrats!");
+                            start();
+                        });
+                } else {
+                    // bid wasn't high enough, so apologize and start over
+                    console.log("Too low--try adding a few dollars.");
+                    start();
+                }
+            });
+        });
 };
 
 
@@ -65,9 +133,14 @@ function sellAnItem() {
             choices: ["Pet Items", "Clothing/Shoes", "Automotive", "Sporting Equipment", "Household/Cooking", "Miscellaneous"]
         },
         {
-            name: "price",
+            name: "starting_BID",
             type: "input",
-            message: "Set the price for your item.",
+            message: "Set the staring price for your item.",
+        },
+        {
+            name: "highest_BID",
+            type: "input",
+            message: "Set the price that completes the auction immediately.",
         },
         {
             name: "stock_quantity",
@@ -75,15 +148,16 @@ function sellAnItem() {
             message: "Enter the quantity.",
         }
     ])
-    .then(function(answer) {
+    .then(function(input) {
         // After user has input info for all 4 prompts, add their item to the products table
         connection.query(
-            "INSERT INTO auctions SET ?",
+            "INSERT INTO products SET ?",
             {
-                product_name: answer.product_name,
-                department_name: answer.department_name,
-                starting_BUY: answer.startingBUY,
-                highest_BUY: answer.startingBUY
+                product_name: input.product_name,
+                department_name: input.department_name,
+                starting_BID: input.starting_BID,
+                highest_BID: input.highest_BID,
+                stock_quantity: input.stock_quantity
             },
             function(error) {
                 if (error) {
@@ -93,75 +167,8 @@ function sellAnItem() {
                 // re-prompt the user for if they want to BUY or SELL
                 start();
                 }
-            ));
-    });
-};
-
-
-// "BUYANITEM" function that shows the user a table of items and allows them to bid on them
-function buyAnItem() {
-    // query the database and build a table for all items being auctioned
-    connection.query("SELECT * FROM products", function(error, results) {
-        if (error) {
-            console.log(error)
-        };
-        // prompt the user for which they'd like to bid on
-        inquirer
-            .prompt([
-                {
-                    name: "choice",
-                    type: "rawlist",
-                    choices: function() {
-                        var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i].item_name);
-                        }
-                        return choiceArray;
-                    },
-                    message: "What auction would you like to place a bid in?"
-                },
-                {
-                    name: "bid",
-                    type: "input",
-                    message: "How much would you like to bid?"
-                }
-            ])
-            .then(function(answer) {
-                // get the information of the chosen item
-                var chosenItem;
-                for (var i = 0; i < results.length; i++) {
-                    if (results[i].item_name === answer.choice) {
-                    chosenItem = results[i];
-                    }
-                };
-    
-                // determine if bid was high enough
-                if (chosenItem.highest_bid < parseInt(answer.bid)) {
-                    // bid was high enough, so update db, let the user know, and start over
-                    connection.query(
-                        "UPDATE auctions SET ? WHERE ?",
-                        [
-                            {
-                                highest_bid: answer.bid
-                            },
-                            {
-                                id: chosenItem.id
-                            }
-                        ],
-                        function(error) {
-                            if (error) {
-                                console.log(error)
-                            };
-                            console.log("Your bid was placed successfully and is being considered.");
-                            start();
-                        });
-                } else {
-                    // bid wasn't high enough, so apologize and start over
-                    console.log("Too low--try adding a few dollars.");
-                    start();
-                }
             });
-        });
+    });
 };
 
 
