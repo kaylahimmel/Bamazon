@@ -44,14 +44,14 @@ X__3. The products table should have each of the following columns:
 
 X__4. Populate this database with around 10 different products. (i.e. Insert "mock" data rows into this database and table).
 
-___5. Then create a Node application called `bamazonCustomer.js`. Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
+X__5. Then create a Node application called `bamazonCustomer.js`. Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
 
-___6. The app should then prompt users with two messages.
+X__6. The app should then prompt users with two messages.
 
-   ___* The first should ask them the ID of the product they would like to buy.
-   ___* The second message should ask how many units of the product they would like to buy.
+   X__* The first should ask them the ID of the product they would like to buy.
+   X__* The second message should ask how many units of the product they would like to buy.
 
-___7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
+X__7. Once the customer has placed the order, your application should check if your store has enough of the product to meet the customer's request.
 
    ___* If not, the app should log a phrase like `Insufficient quantity!`, and then prevent the order from going through.
 
