@@ -7,7 +7,7 @@ var consoleTable = require('console.table');
 
 
 // MYSQL connection credentials
-var connection = mysql.createConnection({
+var connectMySql = mysql.createConnection({
     host: "localhost",
     // Your port; if not 3306
     port: 8889,
@@ -18,170 +18,81 @@ var connection = mysql.createConnection({
 });
  
 
-// Connect to MySQL and run the "bidOrSell" function
-connection.connect(function(error) {
+// Connect to MySQL and run the "buyOrSell" function
+connectMySql.connect(function(error) {
     if (error) {
         console.log(error)
     } else {
-        console.log("connected as id " + connection.threadId);
-        bidOrSell();
+        console.log("You are now connected to Bamazon as User " + connectMySql.threadId);
+        buyItem();
     }
 });
 
 
-// "AFTERCONNECTION" function where a table is created of the availalble products
-function afterConnection() {
-    connection.query("SELECT product_name,stock_quantity FROM products", function(error, response) {
-        if (error) {
-            console.log(error)
-        } else {
-            console.table(response);
-        }
-        connection.end();
-    });
-};
+// table of table query data
+var buildTable = connectMySql.query("SELECT item_id,product_name,price,stock_quantity FROM products", function(error, results) {
+    // throw an error if there's an error
+    if (error) {
+        console.log(error)
+    } else {
+        // show a table of the items in the console if there is no error
+        console.table(results);
+    };
+});
 
+// // "afterConnect" function where a table is created of the availalble products
+// function afterConnect() {
+//     buildTable;
+//     // end connection to MySQL to close the loop
+//     connectMySql.end();
+// };
 
-// "bidOrSell" function that prompts the user to sell an item or bid on a an item
-function bidOrSell() {
-    inquirer
-        .prompt({
-            name: "actions",
-            type: "rawlist",
-            message: "Would you like to bid on or sell an item? Choose '1' to bid, '2' to sell.",
-            choices: ["BID", "SELL"]
-        })
-        .then(function(input) {
-            // based on their input, either call the bid or the SELL functions
-            if (input.actions === "1") {
-                bidOnItem();
-            } else {
-                sellAnItem();
-            }
-        });
-};
-
-
-// "bidOnItem" function that shows the user a table of items and allows them to bid on them
-function bidOnItem() {
-    // query the database and build a table for all items being auctioned
-    connection.query("SELECT * FROM products", function(error, results) {
-        if (error) {
-            console.log(error)
-        };
-        // prompt the user for which they'd like to bid on
-        inquirer
-            .prompt([
-                {
-                    name: "choice",
-                    type: "rawlist",
-                    choices: function() {
-                        var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i].item_name);
-                        }
-                        return choiceArray;
-                    },
-                    message: "Which auction would you like to bid on?"
-                },
-                {
-                    name: "bid",
-                    type: "input",
-                    message: "How much would you like to bid?"
-                }
-            ])
-            .then(function(input) {
-                // get the information of the chosen item
-                var chosenItem;
-                for (var i = 0; i < results.length; i++) {
-                    if (results[i].item_name === input.choice) {
-                    chosenItem = results[i];
-                    }
-                };
-    
-                // determine if bid was high enough
-                if (chosenItem.highest_BID < parseInt(input_BID)) {
-                    // bid was high enough, so update db, let the user know, and start over
-                    connection.query(
-                        "UPDATE products SET ? WHERE ?",
-                        [
-                            {
-                                highest_BID: input_BID
-                            },
-                            {
-                                id: chosenItem.id
-                            }
-                        ],
-                        function(error) {
-                            if (error) {
-                                console.log(error)
-                            };
-                            console.log("Your bid was accepted--congrats!");
-                            bidOrSell();
-                        });
-                } else {
-                    // bid wasn't high enough, so apologize and start over
-                    console.log("Too low--try adding a few dollars.");
-                    bidOrSell();
-                }
-            });
-        });
-};
-
-
-// "SELLANITEM" function that allows user to add an item to be sold
-function sellAnItem() {
-    // prompt for info about the item being put up for auction
+// function queryDanceSongs() {
+//     var query = connection.query("SELECT * FROM songs WHERE genre=?", ["Dance"], function(err, res) {
+//       for (var i = 0; i < res.length; i++) {
+//         console.log(res[i].id + " | " + res[i].title + " | " + res[i].artist + " | " + res[i].genre);
+//       }
+//     });
+  
+//     // logs the actual query being run
+//     console.log(query.sql);
+//   }
+// "buyItem" function that shows the user a table of items and allows them to buy on them
+function buyItem(error, results) {
+    buildTable;
+    // prompt the user to choose an item to buy
     inquirer
         .prompt([
             {
-                name: "product_name",
-                type: "input",
-                message: "Enter a name for your item."
-            },
-            {
-                name: "department_name",
-                type: "list",
-                message: "What department or category is this item? (Use arrow keys to tab through the list and push 'Enter' key when done.)",
-                choices: ["Pet Items", "Clothing/Shoes", "Automotive", "Sporting Equipment", "Household/Cooking", "Miscellaneous"]
-            },
-            {
-                name: "starting_BID",
-                type: "input",
-                message: "Set the staring price for your item. (Do not include dollar sign.)",
-            },
-            {
-                name: "highest_BID",
-                type: "input",
-                message: "Set the price that completes the auction immediately. (Do not include dollar sign.)",
-            },
-            {
-                name: "stock_quantity",
-                type: "input",
-                message: "Enter the quantity.",
-            }
-        ])
-        .then(function(input) {
-            // After user has input info for all 4 prompts, add their item to the products table
-            connection.query(
-                "INSERT INTO products SET ?",
-                {
-                    product_name: input.product_name,
-                    department_name: input.department_name,
-                    starting_BID: input.starting_BID,
-                    highest_BID: input.highest_BID,
-                    stock_quantity: input.stock_quantity
-                },
-                function(error, response) {
-                    if (error) {
-                        console.log(error)
-                    } else {
-                        console.log("Your auction was created successfully!");
-                        // update table of products in the console
-                        afterConnection()
-                        // re-prompt the user for if they want to BUY or SELL
-                        bidOrSell();
+                name: "choice",
+                list: function() {
+                    // new array to hold the items
+                    var itemsForSale = [];
+                    for (var i = 0; i < results.length; i++) {
+                        itemsForSale.push(results[i].item_id);
                     }
-                });
+                    return itemsForSale;
+                },
+                message: "Which product would you like to buy? (Type the item ID then push the 'Enter' key to make your selection"
+            },
+            {
+                name: "quantity",
+                // type: "input",
+                message: "How many units would you like to buy?"
+            }
+        ]).then(function(userChoice) {
+            connectMySql.query("SELECT quantity, price, product_name FROM products WHERE item_id = ?", [userChoice.choice], function(error, results) {
+                var purchaseQty = userChoice.quantity; //works
+                var remainingStock = parseInt(results.quantity - purchaseQty);
+                if(error) {
+                    console.log(error);
+                };
+                if (results[0].quantity < userChoice.quantity) {
+                    console.log("There aren't that many available--please choose a lesser quantity.\n");
+                };        
+                // give user a successful purchase message
+                connectMySql.query("UPDATE products SET quantity = ? WHERE item_id = ?", [remainingStock, userChoice.choice]);
+                console.log("Congrats--your purchase of " + results[0].product_name + " was successful!");
+            });
         });
 };

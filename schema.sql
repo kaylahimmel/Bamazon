@@ -82,3 +82,12 @@ SELECT * FROM products
 -- DELETE FROM products WHERE item_id = 24;
 
 -- UPDATE products SET item_id = 11 WHERE item_id = 25;
+-- UPDATE products SET item_id = 13 WHERE item_id = 27;
+-- UPDATE products SET item_id = 12 WHERE item_id = 26;
+-- UPDATE products SET item_id = 14 WHERE item_id = 28;
+-- UPDATE products SET item_id = 15 WHERE item_id = 29;
+-- UPDATE products SET item_id = 16 WHERE item_id = 30;
+
+-- ALTER TABLE products CHANGE starting_BID price DECIMAL(10,2) NULL;
+-- ALTER TABLE products
+-- DROP highest_BID
