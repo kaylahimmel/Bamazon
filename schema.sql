@@ -56,17 +56,6 @@ SELECT * FROM products
 -- ALTER TABLE products
 -- ADD COLUMN highest_BID DECIMAL(10,2) NULL AFTER starting_BID;
 
--- UPDATE products SET highest_BID = 70 WHERE item_id = 1;
--- UPDATE products SET highest_BID = 160 WHERE item_id = 2;
--- UPDATE products SET highest_BID = 130 WHERE item_id = 3;
--- UPDATE products SET highest_BID = 100 WHERE item_id = 4;
--- UPDATE products SET highest_BID = 110 WHERE item_id = 5;
--- UPDATE products SET highest_BID = 150 WHERE item_id = 6;
--- UPDATE products SET highest_BID = 250 WHERE item_id = 7;
--- UPDATE products SET highest_BID = 90 WHERE item_id = 8;
--- UPDATE products SET highest_BID = 200 WHERE item_id = 9;
--- UPDATE products SET highest_BID = 65 WHERE item_id = 10;
-
 -- DELETE FROM products WHERE item_id = 12;
 -- DELETE FROM products WHERE item_id = 13;
 -- DELETE FROM products WHERE item_id = 14;
@@ -87,6 +76,7 @@ SELECT * FROM products
 -- UPDATE products SET item_id = 14 WHERE item_id = 28;
 -- UPDATE products SET item_id = 15 WHERE item_id = 29;
 -- UPDATE products SET item_id = 16 WHERE item_id = 30;
+-- UPDATE products SET stock_quantity = 10 WHERE item_id = 16;
 
 -- ALTER TABLE products CHANGE starting_BID price DECIMAL(10,2) NULL;
 -- ALTER TABLE products
