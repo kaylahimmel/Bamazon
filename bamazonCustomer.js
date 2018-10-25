@@ -25,66 +25,60 @@ connection.connect(function(error) {
     } else {
         // show the thread connection as the "Bamazon user number"
         console.log("You are now connected to Bamazon as User " + connection.threadId + "\n");
-        removeItems();
-        buildTable();  
-        buyItem();       
+        buyItem();
     }
 });
 
 
 // table of table query data
-function buildTable() {
+function buildTable () {
     connection.query("SELECT item_id,product_name,price,stock_quantity FROM products", function(error, results) {
         // throw an error if there's an error
         if (error) {
             console.log(error)
-        }
-    }) 
-};
-
-
-// "removeItems" function that removes unavailable items from the table
-function removeItems() {
-    connection.query("SELECT item_id FROM products", function(error, results) {
-        for (i = 0; i < results.length; i++) {
-            if (results[i].stock_quantity === 0) {
-                connection.query("DELETE FROM products WHERE item_id = ?", [results[i].item_id], function(error, results) {
-                    // show a table of the items in the console if there is no error
-                    console.log(results[i].product_name + " has been removed from the available products list."); 
-                });      
-            }
+        } else {
+            // show a table of the items in the console if there is no error
+            console.table(results);
         };
-});
+    });
+};
 
-
-// "shopAgain" function that prompts the user to make another purchase or ends the session
-function shopAgain() {
-    inquirer
-            .prompt([
-                {
-                    name: "again",
-                    type: "list",
-                    response: "[Yes, No]",
-                    message: "Would you like to purchase another item?"
-                }
-            ]).then(function(error, results) {
-                if (error) {
-                    console.log(error)
-                };
-                if (results.response === "Yes") {
-                    removeItems();
-                    buildTable(); 
-                    buyItem();
-                } else {
-                    console.log("Thank you for your order. Goodbye.")
-                    connection.end();
-                }
-            });   
+// remove items from table that are not in stock
+function removeItems() {
+    connection.query("DELETE FROM products WHERE stock_quantity=0", function(error, results) {
+        // throw an error if there's an error
+        if (error) {
+            console.log(error)
+        }
+    });
 };
 
 
-// "buyItem" function that updates available items then shows the user a table of items and prompts them to buy on them
+// ask user if they want to make another purchase
+function shopAgain(error, results) {
+    inquirer 
+        .prompt([
+            {
+                name: "again",
+                type: "list",
+                message: "Would you like to make another purchase?",
+                choices: ["Yes", "No"]
+            }
+        ]).then(function(userChoice) {
+            if (userChoice.again === "Yes" || userChoice.again === 0) {
+                buyItem();
+            } else {
+                console.log("Thank you for shopping at Bamazon, see you next time.");
+                connection.end();
+            }
+        });   
+}
+
+
+// "buyItem" function that shows the user a table of items and allows them to buy on them
 function buyItem(error, results) {
+    buildTable();
+    // setTimeout(myFunc, 1500, 'funky');
     // prompt the user to choose an item to buy
     inquirer
         .prompt([
@@ -102,7 +96,6 @@ function buyItem(error, results) {
             },
             {
                 name: "number",
-                // type: "input",
                 message: "How many units would you like to buy?"
             }
         ]).then(function(userChoice) {
@@ -112,19 +105,16 @@ function buyItem(error, results) {
                 if(error) {
                     console.log(error);
                 };
-                // if the quantity of the item selected = 0, delete the item from the table and have the user choose another item
-                if (results[0].stock_quantity === 0) {
-                    connection.query("DELETE FROM products WHERE item_id = ?", [userChoice.item_id], function(error, results) {
-                        console.log("That item is unavailable--please select another.\n")
-                    });  
-                // if the amount of available stock is less than the quantity entered by the user, have them select a lesser amount    
-                } else if (results[0].stock_quantity < userChoice.number) {
-                    console.log("There aren't that many available--please choose a lesser quantity.\n");
-                } 
-                // give user a successful purchase message
-                connection.query("UPDATE products SET stock_quantity = ? WHERE item_id = ?", [remainingStock, userChoice.choice]);
-                console.log("Congrats--your purchase of " + results[0].product_name + " was successful!\n");
+                if (remainingStock < 0) {
+                    return console.log("There aren't that many available--please choose a lesser quantity.\n");
+                    buyItem();
+                } else {
+                    connection.query("UPDATE products SET stock_quantity = ? WHERE item_id = ?", [remainingStock, userChoice.choice]);
+                    // give user a successful purchase message
+                    console.log("Congrats--your purchase of " + results[0].product_name + " was successful!\n");
+                    removeItems();
+                    shopAgain();       
+                }        
             });
-        }); 
-    shopAgain();       
+        });
 };
