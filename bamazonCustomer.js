@@ -43,6 +43,7 @@ function buildTable () {
     });
 };
 
+
 // remove items from table that are not in stock
 function removeItems() {
     connection.query("DELETE FROM products WHERE stock_quantity=0", function(error, results) {
@@ -68,7 +69,8 @@ function shopAgain(error, results) {
             if (userChoice.again === "Yes" || userChoice.again === 0) {
                 buyItem();
             } else {
-                console.log("Thank you for shopping at Bamazon, see you next time.");
+                console.log("Thank you for shopping at Bamazon, see you next time. ")
+                console.log("To make another purchase, type 'node bamazonCustomer.js' and push enter.");
                 connection.end();
             }
         });   
